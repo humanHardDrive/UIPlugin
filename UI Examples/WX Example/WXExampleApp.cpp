@@ -11,7 +11,6 @@ class WXExampleApp : public wxApp
 public:
 	virtual bool OnInit();
 };
-
 wxIMPLEMENT_APP(WXExampleApp);
 
 bool WXExampleApp::OnInit()

@@ -20,10 +20,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\UIPluginBase.h">
+    <ClInclude Include="Headers\Events.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Events.h">
+    <ClInclude Include="Headers\UIPluginBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UIPluginBase", "UIPluginBas
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicEvents", "Plugin Examples\BasicEvents\BasicEvents.vcxproj", "{F917F864-8744-4A67-AC57-5E6222312450}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFC Example", "UI Examples\MFC Example\MFC Example.vcxproj", "{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -45,6 +47,14 @@ Global
 		{F917F864-8744-4A67-AC57-5E6222312450}.Release|x64.Build.0 = Release|x64
 		{F917F864-8744-4A67-AC57-5E6222312450}.Release|x86.ActiveCfg = Release|Win32
 		{F917F864-8744-4A67-AC57-5E6222312450}.Release|x86.Build.0 = Release|Win32
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Debug|x64.ActiveCfg = Debug|x64
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Debug|x64.Build.0 = Debug|x64
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Debug|x86.ActiveCfg = Debug|Win32
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Debug|x86.Build.0 = Debug|Win32
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Release|x64.ActiveCfg = Release|x64
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Release|x64.Build.0 = Release|x64
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Release|x86.ActiveCfg = Release|Win32
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +62,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{6BD109E1-A3C7-4EF7-8EBB-8A98AAA1784C} = {38A13B9E-DD9A-48B1-984C-9D0C2E6365E9}
 		{F917F864-8744-4A67-AC57-5E6222312450} = {614D6304-103F-42E1-A688-708C5952EBCE}
+		{45FC18A0-7B9A-43CB-A9E6-2D1B3B208D6E} = {38A13B9E-DD9A-48B1-984C-9D0C2E6365E9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {858BD694-FA7A-4B5D-B0D0-3A1E384FBF1C}

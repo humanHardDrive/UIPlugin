@@ -132,7 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Events.h" />
-    <ClInclude Include="Headers\UIPluginBase.h" />
+    <ClInclude Include="Headers\UIPluginBase.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
