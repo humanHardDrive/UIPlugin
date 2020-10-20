@@ -135,10 +135,12 @@
     <ClCompile Include="WXExampleApp.cpp" />
     <ClCompile Include="WXExampleBase.cpp" />
     <ClCompile Include="WXExampleFrame.cpp" />
+    <ClCompile Include="XULParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WXExampleBase.h" />
     <ClInclude Include="WXExampleFrame.h" />
+    <ClInclude Include="XULParser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
