@@ -13,8 +13,13 @@
 /*https://developer.mozilla.org/en-US/docs/Archive/Mozilla/XUL*/
 
 #define WINDOW_ELEMENT			"window"
+
 #define BUTTON_ELEMENT			"button"
+
 #define MENULIST_ELEMENT		"menulist"
+#define MENU_POPUP_ELEMENT		"menupopup"
+#define MENU_ITEM_ELEMENT		"menuitem"
+
 #define RADIO_GROUP_ELEMENT		"radiogroup"
 #define RADIO_BUTTON_ELEMENT	"radio"
 

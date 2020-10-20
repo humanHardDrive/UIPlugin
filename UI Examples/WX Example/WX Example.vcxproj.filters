@@ -24,18 +24,12 @@
     <ClCompile Include="WXExampleFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XULParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WXExampleBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WXExampleFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XULParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

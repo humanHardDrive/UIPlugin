@@ -2,6 +2,7 @@
 
 #include "wx/filedlg.h"
 #include "wx/button.h"
+#include "wx/combobox.h"
 
 #include <iostream>
 
@@ -83,8 +84,11 @@ bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
 bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt)
 {
 	std::string sLabel = pt.get("<xmlattr>.label", "");
-	
+	bool bDisabled = pt.get("<xmlattr>.disabled", false);
+
 	wxButton* pButton = new wxButton(this, wxID_ANY, sLabel);
+	pButton->Enable(!bDisabled);
+
 	m_BasicSizer->Add(pButton, 0, wxALL, 5);
 	m_aPluginObjects.push(pButton);
 
@@ -93,7 +97,33 @@ bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt)
 
 bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt)
 {
-	return false;
+	if (pt.get_child_optional(MENU_POPUP_ELEMENT))
+	{
+		std::string sLabel = pt.get("<xmlattr>.label", "");
+		bool bDisabled = pt.get("<xmlattr>.disabled", false);
+		
+		wxComboBox* pComboBox = new wxComboBox(this, wxID_ANY, sLabel);
+		pComboBox->Enable(!bDisabled);
+
+		m_BasicSizer->Add(pComboBox, 0, wxALL, 5);
+		m_aPluginObjects.push(pComboBox);
+
+		for (auto& v : pt.get_child(MENU_POPUP_ELEMENT))
+		{
+			if (v.first == MENU_ITEM_ELEMENT)
+			{
+				std::string sChoice = v.second.get("<xmlattr>.label", "");
+				bool bSelected = v.second.get("<xmlattr>.selected", false);
+
+				int nCount = pComboBox->Append(sChoice);
+
+				if(bSelected)
+					pComboBox->SetSelection(nCount);
+			}
+		}
+	}
+
+	return true;
 }
 
 bool WXExampleFrame::parseRadioGroup(boost::property_tree::ptree & pt)
