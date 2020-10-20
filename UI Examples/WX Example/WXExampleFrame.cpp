@@ -12,13 +12,9 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	WXExampleFrameBase(parent)
 {
 	//Setup element parsing functions
-	m_ParseFnMap[BUTTON_ELEMENT]		= [this](boost::property_tree::ptree& pt) { return parseButton(pt); };
-	m_ParseFnMap[MENULIST_ELEMENT]		= [this](boost::property_tree::ptree& pt) { return parseMenuList(pt); };
-	m_ParseFnMap[RADIO_GROUP_ELEMENT]	= [this](boost::property_tree::ptree& pt) { return parseRadioGroup(pt); };
-
-	//Create the basic sizer needed for WX widgets
-	m_BasicSizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(m_BasicSizer);
+	m_ParseFnMap[BUTTON_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseButton(pt, pSizer); };
+	m_ParseFnMap[MENULIST_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseMenuList(pt, pSizer); };
+	m_ParseFnMap[RADIO_GROUP_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseRadioGroup(pt, pSizer); };
 }
 
 void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
@@ -59,6 +55,9 @@ bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
 {
 	if (pt.get_child_optional("window"))
 	{
+		wxBoxSizer* pSizer = new wxBoxSizer(wxVERTICAL);
+		m_aPluginObjects.push(pSizer);
+
 		for (auto& v : pt.get_child("window"))
 		{
 			std::string sTag = v.first;
@@ -70,10 +69,11 @@ bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
 			else
 			{
 				if (m_ParseFnMap.find(sTag) != m_ParseFnMap.end())
-					m_ParseFnMap[sTag](v.second);
+					m_ParseFnMap[sTag](v.second, pSizer);
 			}
 		}
 
+		SetSizer(pSizer);
 		Layout();
 		return true;
 	}
@@ -81,7 +81,7 @@ bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
 	return false;
 }
 
-bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt)
+bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt, wxSizer* pSizer)
 {
 	std::string sLabel = pt.get("<xmlattr>.label", "");
 	bool bDisabled = pt.get("<xmlattr>.disabled", false);
@@ -89,13 +89,13 @@ bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt)
 	wxButton* pButton = new wxButton(this, wxID_ANY, sLabel);
 	pButton->Enable(!bDisabled);
 
-	m_BasicSizer->Add(pButton, 0, wxALL, 5);
+	pSizer->Add(pButton, 0, wxALL, 5);
 	m_aPluginObjects.push(pButton);
 
 	return true;
 }
 
-bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt)
+bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt, wxSizer* pSizer)
 {
 	if (pt.get_child_optional(MENU_POPUP_ELEMENT))
 	{
@@ -105,7 +105,7 @@ bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt)
 		wxComboBox* pComboBox = new wxComboBox(this, wxID_ANY, sLabel);
 		pComboBox->Enable(!bDisabled);
 
-		m_BasicSizer->Add(pComboBox, 0, wxALL, 5);
+		pSizer->Add(pComboBox, 0, wxALL, 5);
 		m_aPluginObjects.push(pComboBox);
 
 		for (auto& v : pt.get_child(MENU_POPUP_ELEMENT))
@@ -126,7 +126,7 @@ bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt)
 	return true;
 }
 
-bool WXExampleFrame::parseRadioGroup(boost::property_tree::ptree & pt)
+bool WXExampleFrame::parseRadioGroup(boost::property_tree::ptree & pt, wxSizer* pSizer)
 {
 	return false;
 }

@@ -33,14 +33,12 @@ protected:
 
 private:
 	std::stack<wxObject*> m_aPluginObjects;
-	std::map<std::string, std::function<bool(boost::property_tree::ptree&)>> m_ParseFnMap;
-
-	wxBoxSizer* m_BasicSizer;
+	std::map<std::string, std::function<bool(boost::property_tree::ptree&, wxSizer*)>> m_ParseFnMap;
 
 	bool parsePluginUI(const std::string& sFilePath);
 
 	bool parseWindow(boost::property_tree::ptree& pt);
-	bool parseButton(boost::property_tree::ptree& pt);
-	bool parseMenuList(boost::property_tree::ptree& pt);
-	bool parseRadioGroup(boost::property_tree::ptree& pt);
+	bool parseButton(boost::property_tree::ptree& pt, wxSizer* pSizer);
+	bool parseMenuList(boost::property_tree::ptree& pt, wxSizer* pSizer);
+	bool parseRadioGroup(boost::property_tree::ptree& pt, wxSizer* pSizer);
 };
