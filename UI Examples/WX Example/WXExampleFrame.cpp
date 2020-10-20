@@ -56,7 +56,6 @@ bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
 	if (pt.get_child_optional("window"))
 	{
 		wxBoxSizer* pSizer = new wxBoxSizer(wxVERTICAL);
-		m_aPluginObjects.push(pSizer);
 
 		for (auto& v : pt.get_child("window"))
 		{
