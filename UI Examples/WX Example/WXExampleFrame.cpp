@@ -3,6 +3,7 @@
 #include "wx/filedlg.h"
 #include "wx/button.h"
 #include "wx/combobox.h"
+#include "wx/radiobut.h"
 
 #include <iostream>
 
@@ -55,24 +56,27 @@ bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
 {
 	if (pt.get_child_optional("window"))
 	{
+		//Create a basic sizer for initial layout
 		wxBoxSizer* pSizer = new wxBoxSizer(wxVERTICAL);
 
 		for (auto& v : pt.get_child("window"))
 		{
 			std::string sTag = v.first;
-			if (sTag == "<xmlattr>")
+			if (sTag == "<xmlattr>") //Window data
 			{
 				std::string sID = v.second.get("id", "");
 				std::string sTitle = v.second.get("title", "");
 			}
-			else
+			else //Any other UI element
 			{
 				if (m_ParseFnMap.find(sTag) != m_ParseFnMap.end())
 					m_ParseFnMap[sTag](v.second, pSizer);
 			}
 		}
 
+		//This call handles cleaning up any old sizer
 		SetSizer(pSizer);
+		//Do the layout
 		Layout();
 		return true;
 	}
@@ -127,5 +131,24 @@ bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt, wxSizer* pS
 
 bool WXExampleFrame::parseRadioGroup(boost::property_tree::ptree & pt, wxSizer* pSizer)
 {
-	return false;
+	bool bFirst = true;
+	for (auto& v : pt.get_child(""))
+	{
+		if (v.first == RADIO_BUTTON_ELEMENT)
+		{
+			std::string sLabel = v.second.get("<xmlattr>.label", "");
+			bool bDisabled = v.second.get("<xmlattr>.disabled", false);
+			bool bSelected = v.second.get("<xmlattr>.selected", false);
+
+			wxRadioButton* pRadioButton = new wxRadioButton(this, wxID_ANY, sLabel, wxDefaultPosition, wxDefaultSize, bFirst ? wxRB_GROUP : 0);
+			pRadioButton->Enable(!bDisabled);
+			pRadioButton->SetValue(bSelected);
+
+			pSizer->Add(pRadioButton, 0, wxALL, 5);
+			m_aPluginObjects.push(pRadioButton);
+
+			bFirst = false;
+		}
+	}
+	return true;
 }

@@ -23,6 +23,10 @@
 #define RADIO_GROUP_ELEMENT		"radiogroup"
 #define RADIO_BUTTON_ELEMENT	"radio"
 
+#define GRID_ELEMENT			"grid"
+#define COLUMN_ELEMENT			"column"
+#define ROW_ELEMENT				"row"
+
 class WXExampleFrame : public WXExampleFrameBase
 {
 public:
