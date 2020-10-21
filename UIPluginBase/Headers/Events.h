@@ -1,4 +1,5 @@
 #pragma once
 
-#define EVT_TYPE			"EventType"
-#define EVT_BUTTON_PRESSED	"ButtonPressed"
+#define EVENT_TYPE			"event"
+#define EVENT_SOURCE		"source"
+#define EVENT_DATA			"data"

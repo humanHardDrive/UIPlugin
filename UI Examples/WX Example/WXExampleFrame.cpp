@@ -9,15 +9,17 @@
 
 #include <iostream>
 
+#include "Elements.h"
+#include "Events.h"
+
 #include "boost/property_tree/xml_parser.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
 WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	WXExampleFrameBase(parent)
 {
-	Bind(wxEVT_BUTTON, &WXExampleFrame::handleButtonPress, this, wxID_ANY);
-
 	//Setup element parsing functions
+	m_ParseFnMap[WINDOW_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseWindow(pt, pSizer); };
 	m_ParseFnMap[BUTTON_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseButton(pt, pSizer); };
 	m_ParseFnMap[MENULIST_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseMenuList(pt, pSizer); };
 	m_ParseFnMap[RADIO_GROUP_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseRadioGroup(pt, pSizer); };
@@ -47,7 +49,7 @@ bool WXExampleFrame::parsePluginUI(const std::string & sFilePath)
 	try
 	{
 		boost::property_tree::read_xml(sFilePath, pt);
-		return parseWindow(pt);
+		return parseElements(pt, nullptr);
 	}
 	catch (boost::property_tree::ptree_error& e)
 	{
@@ -57,32 +59,30 @@ bool WXExampleFrame::parsePluginUI(const std::string & sFilePath)
 	return true;
 }
 
-bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt)
+bool WXExampleFrame::parseElements(boost::property_tree::ptree & pt, wxSizer* pSizer)
 {
-	if (pt.get_child_optional("window"))
+	if (pt.get_child_optional(""))
 	{
-		//Create a basic sizer for initial layout
-		wxBoxSizer* pSizer = new wxBoxSizer(wxVERTICAL);
-
-		for (auto& v : pt.get_child("window"))
+		for (auto& v : pt.get_child(""))
 		{
-			std::string sTag = v.first;
-			if (sTag == "<xmlattr>") //Window data
+			if (m_ParseFnMap.find(v.first) != m_ParseFnMap.end())
 			{
-				std::string sID = v.second.get("id", "");
-				std::string sTitle = v.second.get("title", "");
-			}
-			else //Any other UI element
-			{
-				if (m_ParseFnMap.find(sTag) != m_ParseFnMap.end())
-					m_ParseFnMap[sTag](v.second, pSizer);
+				if(m_ParseFnMap[v.first](v.second, pSizer))
+					parseElements(v.second, pSizer);
 			}
 		}
+	}
 
-		//This call handles cleaning up any old sizer
-		SetSizer(pSizer);
-		//Do the layout
-		Layout();
+	return true;
+}
+
+bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt, wxSizer* pSizer)
+{
+	std::string sID = pt.get("<xmlattr>.id", "");
+	std::string sTitle = pt.get("<xmlattr>.title", "");
+
+	if (sID == "plugin-ui")
+	{
 		return true;
 	}
 
@@ -170,8 +170,8 @@ void WXExampleFrame::handleButtonPress(wxCommandEvent & event)
 	std::stringstream ss;
 
 	wxButton* pButton = static_cast<wxButton*>(FindWindowById(event.GetId()));
-	pt.add("event", BUTTON_ELEMENT);
-	pt.add("id", pButton->GetName());
+	pt.add(EVENT_TYPE, BUTTON_ELEMENT);
+	pt.add(EVENT_SOURCE, pButton->GetName());
 
 	boost::property_tree::write_json(ss, pt);
 
@@ -185,9 +185,9 @@ void WXExampleFrame::handleComboboxChange(wxCommandEvent & event)
 	std::stringstream ss;
 
 	wxComboBox* pComboBox = static_cast<wxComboBox*>(FindWindowById(event.GetId()));
-	pt.add("event", MENULIST_ELEMENT);
-	pt.add("id", pComboBox->GetName());
-	pt.add("selection", pComboBox->GetValue());
+	pt.add(EVENT_TYPE, MENULIST_ELEMENT);
+	pt.add(EVENT_SOURCE, pComboBox->GetName());
+	pt.add(EVENT_DATA, pComboBox->GetValue());
 
 	boost::property_tree::write_json(ss, pt);
 
