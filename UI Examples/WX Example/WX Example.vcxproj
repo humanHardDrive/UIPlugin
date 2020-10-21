@@ -70,13 +70,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(BOOST_PATH);$(WX_PATH)include;$(WX_PATH)include\msvc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(WX_PATH)lib\vc_lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_PATH);$(WX_PATH)include;$(WX_PATH)include\msvc;..\..\UIPluginBase\Headers;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_PATH)\stage\lib;$(WX_PATH)lib\vc_lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(BOOST_PATH);$(WX_PATH)include;$(WX_PATH)include\msvc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(WX_PATH)lib\vc_lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_PATH);$(WX_PATH)include;$(WX_PATH)include\msvc;..\..\UIPluginBase\Headers;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_PATH)\stage\lib;$(WX_PATH)lib\vc_lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -139,6 +139,11 @@
   <ItemGroup>
     <ClInclude Include="WXExampleBase.h" />
     <ClInclude Include="WXExampleFrame.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\UIPluginBase\UIPluginBase.vcxproj">
+      <Project>{e491ec5f-97b0-4cef-addc-1159d8b7d159}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
