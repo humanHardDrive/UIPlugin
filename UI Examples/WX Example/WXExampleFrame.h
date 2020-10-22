@@ -26,7 +26,9 @@ private:
 
 	std::stack<wxObject*> m_aPluginObjects;
 	std::map<std::string, std::function<parseReturn(boost::property_tree::ptree&, wxSizer*, wxWindow*)>> m_ParseFnMap;
+
 	std::map<int, std::string> m_EventEventMap;
+	std::map<int, std::function<std::string(int)>> m_EventDataFnMap;
 
 	boost::shared_ptr<UIPluginBase> m_pCurrentPlugin;
 

@@ -22,6 +22,10 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	//Setup event mapping
 	m_EventEventMap[wxEVT_BUTTON] = BUTTON_ELEMENT;
 	m_EventEventMap[wxEVT_COMBOBOX] = MENULIST_ELEMENT;
+	m_EventEventMap[wxEVT_RADIOBUTTON] = RADIO_BUTTON_ELEMENT;
+
+	m_EventDataFnMap[wxEVT_BUTTON] = [this](int ID) {return ""; };
+	m_EventDataFnMap[wxEVT_COMBOBOX] = [this](int ID) {	return std::string(static_cast<wxComboBox*>(FindWindowById(ID))->GetStringSelection().c_str()); };
 
 	//Setup element parsing functions
 	m_ParseFnMap[WINDOW_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseWindow(pt, pSizer, pElement); };
