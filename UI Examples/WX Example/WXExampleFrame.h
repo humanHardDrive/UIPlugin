@@ -26,6 +26,7 @@ private:
 
 	std::stack<wxObject*> m_aPluginObjects;
 	std::map<std::string, std::function<parseReturn(boost::property_tree::ptree&, wxSizer*, wxWindow*)>> m_ParseFnMap;
+	std::map<int, std::string> m_EventEventMap;
 
 	boost::shared_ptr<UIPluginBase> m_pCurrentPlugin;
 
@@ -43,6 +44,9 @@ private:
 	parseReturn parseRadioGroup(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
 	parseReturn parseRadioButton(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
 
+	parseReturn parseSpacer(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
+
 	void handleButtonPress(wxCommandEvent& event);
 	void handleComboboxChange(wxCommandEvent& event);
+	void handleRadioButton(wxCommandEvent& event);
 };

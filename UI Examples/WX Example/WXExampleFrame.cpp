@@ -19,6 +19,10 @@
 WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	WXExampleFrameBase(parent)
 {
+	//Setup event mapping
+	m_EventEventMap[wxEVT_BUTTON] = BUTTON_ELEMENT;
+	m_EventEventMap[wxEVT_COMBOBOX] = MENULIST_ELEMENT;
+
 	//Setup element parsing functions
 	m_ParseFnMap[WINDOW_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseWindow(pt, pSizer, pElement); };
 	
@@ -30,6 +34,8 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 
 	m_ParseFnMap[RADIO_GROUP_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseRadioGroup(pt, pSizer, pElement); };
 	m_ParseFnMap[RADIO_BUTTON_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseRadioButton(pt, pSizer, pElement); };
+
+	m_ParseFnMap[SPACER_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseSpacer(pt, pSizer, pElement); };
 }
 
 void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
@@ -168,7 +174,6 @@ WXExampleFrame::parseReturn WXExampleFrame::parseRadioGroup(boost::property_tree
 
 	wxStaticBoxSizer* pStaticSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, sLabel), wxVERTICAL);
 	pSizer->Add(pStaticSizer, 0, 0, 5);
-	//m_aPluginObjects.push(pStaticSizer);
 
 	return std::make_tuple(true, pStaticSizer, pElement);
 }
@@ -182,10 +187,16 @@ WXExampleFrame::parseReturn WXExampleFrame::parseRadioButton(boost::property_tre
 	wxRadioButton* pRadioButton = new wxRadioButton(this, wxID_ANY, sLabel);
 	pRadioButton->SetName(sID);
 	pRadioButton->Enable(!bDisabled);
+	Bind(wxEVT_RADIOBUTTON, &WXExampleFrame::handleRadioButton, this, pRadioButton->GetId());
 
 	pSizer->Add(pRadioButton, 0, wxALL, 5);
 	m_aPluginObjects.push(pRadioButton);
 
+	return std::make_tuple(true, pSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseSpacer(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
 	return std::make_tuple(true, pSizer, pElement);
 }
 
@@ -197,6 +208,7 @@ void WXExampleFrame::handleButtonPress(wxCommandEvent & event)
 	wxButton* pButton = static_cast<wxButton*>(FindWindowById(event.GetId()));
 	pt.add(EVENT_TYPE, BUTTON_ELEMENT);
 	pt.add(EVENT_SOURCE, pButton->GetName());
+	pt.add(EVENT_DATA, "");
 
 	boost::property_tree::write_json(ss, pt);
 
@@ -213,6 +225,22 @@ void WXExampleFrame::handleComboboxChange(wxCommandEvent & event)
 	pt.add(EVENT_TYPE, MENULIST_ELEMENT);
 	pt.add(EVENT_SOURCE, pComboBox->GetName());
 	pt.add(EVENT_DATA, pComboBox->GetValue());
+
+	boost::property_tree::write_json(ss, pt);
+
+	if (m_pCurrentPlugin)
+		m_pCurrentPlugin->passEvent(ss.str());
+}
+
+void WXExampleFrame::handleRadioButton(wxCommandEvent & event)
+{
+	boost::property_tree::ptree pt;
+	std::stringstream ss;
+
+	wxRadioButton* pRadioButton = static_cast<wxRadioButton*>(FindWindowById(event.GetId()));
+	pt.add(EVENT_TYPE, RADIO_BUTTON_ELEMENT);
+	pt.add(EVENT_SOURCE, pRadioButton->GetName());
+	pt.add(EVENT_DATA, "");
 
 	boost::property_tree::write_json(ss, pt);
 
