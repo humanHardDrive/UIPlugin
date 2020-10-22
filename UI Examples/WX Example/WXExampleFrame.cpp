@@ -2,6 +2,7 @@
 
 #include "wx/filedlg.h"
 #include "wx/sizer.h"
+#include "wx/statbox.h"
 #include "wx/button.h"
 #include "wx/combobox.h"
 #include "wx/radiobut.h"
@@ -19,10 +20,16 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	WXExampleFrameBase(parent)
 {
 	//Setup element parsing functions
-	m_ParseFnMap[WINDOW_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseWindow(pt, pSizer); };
-	m_ParseFnMap[BUTTON_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseButton(pt, pSizer); };
-	m_ParseFnMap[MENULIST_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseMenuList(pt, pSizer); };
-	m_ParseFnMap[RADIO_GROUP_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer) { return parseRadioGroup(pt, pSizer); };
+	m_ParseFnMap[WINDOW_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseWindow(pt, pSizer, pElement); };
+	
+	m_ParseFnMap[BUTTON_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseButton(pt, pSizer, pElement); };
+
+	m_ParseFnMap[MENULIST_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseMenuList(pt, pSizer, pElement); };
+	m_ParseFnMap[MENU_POPUP_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseMenuPopUp(pt, pSizer, pElement); };
+	m_ParseFnMap[MENU_ITEM_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) {return parseMenuItem(pt, pSizer, pElement); };
+
+	m_ParseFnMap[RADIO_GROUP_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseRadioGroup(pt, pSizer, pElement); };
+	m_ParseFnMap[RADIO_BUTTON_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseRadioButton(pt, pSizer, pElement); };
 }
 
 void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
@@ -45,51 +52,64 @@ void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
 bool WXExampleFrame::parsePluginUI(const std::string & sFilePath)
 {
 	boost::property_tree::ptree pt;
+	WXExampleFrame::parseReturn parseResult;
 
 	try
 	{
 		boost::property_tree::read_xml(sFilePath, pt);
-		return parseElements(pt, nullptr);
+		parseResult = parseElements(pt, nullptr, nullptr);
+
+		if (std::get<1>(parseResult))
+		{
+			SetSizer(std::get<1>(parseResult));
+			Layout();
+		}
 	}
 	catch (boost::property_tree::ptree_error& e)
 	{
 		return false;
 	}
 
-	return true;
+	return std::get<0>(parseResult);
 }
 
-bool WXExampleFrame::parseElements(boost::property_tree::ptree & pt, wxSizer* pSizer)
+WXExampleFrame::parseReturn WXExampleFrame::parseElements(boost::property_tree::ptree & pt, wxSizer* pSizer, wxWindow* pElement)
 {
 	if (pt.get_child_optional(""))
 	{
+		WXExampleFrame::parseReturn parseResult;
+
 		for (auto& v : pt.get_child(""))
 		{
 			if (m_ParseFnMap.find(v.first) != m_ParseFnMap.end())
 			{
-				if(m_ParseFnMap[v.first](v.second, pSizer))
-					parseElements(v.second, pSizer);
+				parseResult = m_ParseFnMap[v.first](v.second, pSizer, pElement);
+				if(std::get<0>(parseResult))
+					parseElements(v.second, std::get<1>(parseResult), std::get<2>(parseResult));
 			}
 		}
+
+		return std::make_tuple(true, std::get<1>(parseResult), std::get<2>(parseResult));
 	}
 
-	return true;
+	return std::make_tuple(false, pSizer, pElement);
 }
 
-bool WXExampleFrame::parseWindow(boost::property_tree::ptree & pt, wxSizer* pSizer)
+WXExampleFrame::parseReturn WXExampleFrame::parseWindow(boost::property_tree::ptree & pt, wxSizer* pSizer, wxWindow* pElement)
 {
 	std::string sID = pt.get("<xmlattr>.id", "");
 	std::string sTitle = pt.get("<xmlattr>.title", "");
 
 	if (sID == "plugin-ui")
 	{
-		return true;
+		wxBoxSizer* pNewSizer = new wxBoxSizer(wxVERTICAL);
+		return std::make_tuple(true, pNewSizer, pElement);
 	}
 
-	return false;
+	return std::make_tuple(false, pSizer, pElement);
 }
 
-bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt, wxSizer* pSizer)
+WXExampleFrame::parseReturn WXExampleFrame::parseButton(boost::property_tree::ptree & pt, wxSizer* pSizer, wxWindow* pElement)
 {
 	std::string sLabel = pt.get("<xmlattr>.label", "");
 	std::string sID = pt.get("<xmlattr>.id", "");
@@ -103,65 +123,70 @@ bool WXExampleFrame::parseButton(boost::property_tree::ptree & pt, wxSizer* pSiz
 	pSizer->Add(pButton, 0, wxALL, 5);
 	m_aPluginObjects.push(pButton);
 
-	return true;
+	return std::make_tuple(true, pSizer, pElement);
 }
 
-bool WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt, wxSizer* pSizer)
+WXExampleFrame::parseReturn WXExampleFrame::parseMenuList(boost::property_tree::ptree & pt, wxSizer* pSizer, wxWindow* pElement)
 {
-	if (pt.get_child_optional(MENU_POPUP_ELEMENT))
-	{
-		std::string sLabel = pt.get("<xmlattr>.label", "");
-		std::string sID = pt.get("<xmlattr>.id", "");
-		bool bDisabled = pt.get("<xmlattr>.disabled", false);
-		
-		wxComboBox* pComboBox = new wxComboBox(this, wxID_ANY, sLabel);
-		pComboBox->Enable(!bDisabled);
-		pComboBox->SetName(sID);
-		Bind(wxEVT_COMBOBOX, &WXExampleFrame::handleComboboxChange, this, pComboBox->GetId());
+	std::string sLabel = pt.get("<xmlattr>.label", "");
+	std::string sID = pt.get("<xmlattr>.id", "");
+	bool bDisabled = pt.get("<xmlattr>.disabled", false);
 
-		pSizer->Add(pComboBox, 0, wxALL, 5);
-		m_aPluginObjects.push(pComboBox);
+	wxComboBox* pComboBox = new wxComboBox(this, wxID_ANY, sLabel);
+	pComboBox->Enable(!bDisabled);
+	pComboBox->SetName(sID);
+	Bind(wxEVT_COMBOBOX, &WXExampleFrame::handleComboboxChange, this, pComboBox->GetId());
 
-		for (auto& v : pt.get_child(MENU_POPUP_ELEMENT))
-		{
-			if (v.first == MENU_ITEM_ELEMENT)
-			{
-				std::string sChoice = v.second.get("<xmlattr>.label", "");
-				bool bSelected = v.second.get("<xmlattr>.selected", false);
+	pSizer->Add(pComboBox, 0, wxALL, 5);
+	m_aPluginObjects.push(pComboBox);
 
-				int nCount = pComboBox->Append(sChoice);
-
-				if(bSelected)
-					pComboBox->SetSelection(nCount);
-			}
-		}
-	}
-
-	return true;
+	return std::make_tuple(true, pSizer, pComboBox);
 }
 
-bool WXExampleFrame::parseRadioGroup(boost::property_tree::ptree & pt, wxSizer* pSizer)
+WXExampleFrame::parseReturn WXExampleFrame::parseMenuPopUp(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
 {
-	bool bFirst = true;
-	for (auto& v : pt.get_child(""))
-	{
-		if (v.first == RADIO_BUTTON_ELEMENT)
-		{
-			std::string sLabel = v.second.get("<xmlattr>.label", "");
-			bool bDisabled = v.second.get("<xmlattr>.disabled", false);
-			bool bSelected = v.second.get("<xmlattr>.selected", false);
+	return std::make_tuple(true, pSizer, pElement);
+}
 
-			wxRadioButton* pRadioButton = new wxRadioButton(this, wxID_ANY, sLabel, wxDefaultPosition, wxDefaultSize, bFirst ? wxRB_GROUP : 0);
-			pRadioButton->Enable(!bDisabled);
-			pRadioButton->SetValue(bSelected);
+WXExampleFrame::parseReturn WXExampleFrame::parseMenuItem(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	wxComboBox* pComboBox = static_cast<wxComboBox*>(pElement);
+	std::string sChoice = pt.get("<xmlattr>.label", "");
+	bool bSelected = pt.get("<xmlattr>.selected", false);
 
-			pSizer->Add(pRadioButton, 0, wxALL, 5);
-			m_aPluginObjects.push(pRadioButton);
+	int nCount = pComboBox->Append(sChoice);
 
-			bFirst = false;
-		}
-	}
-	return true;
+	if (bSelected)
+		pComboBox->SetSelection(nCount);
+
+	return std::make_tuple(true, pSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseRadioGroup(boost::property_tree::ptree & pt, wxSizer* pSizer, wxWindow* pElement)
+{
+	std::string sLabel = pt.get("<xmlattr>.label", "");
+
+	wxStaticBoxSizer* pStaticSizer = new wxStaticBoxSizer(new wxStaticBox(this, wxID_ANY, sLabel), wxVERTICAL);
+	pSizer->Add(pStaticSizer, 0, 0, 5);
+	//m_aPluginObjects.push(pStaticSizer);
+
+	return std::make_tuple(true, pStaticSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseRadioButton(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	std::string sLabel = pt.get("<xmlattr>.label", "");
+	std::string sID = pt.get("<xmlattr>.id", "");
+	bool bDisabled = pt.get("<xmlattr>.disabled", false);
+
+	wxRadioButton* pRadioButton = new wxRadioButton(this, wxID_ANY, sLabel);
+	pRadioButton->SetName(sID);
+	pRadioButton->Enable(!bDisabled);
+
+	pSizer->Add(pRadioButton, 0, wxALL, 5);
+	m_aPluginObjects.push(pRadioButton);
+
+	return std::make_tuple(true, pSizer, pElement);
 }
 
 void WXExampleFrame::handleButtonPress(wxCommandEvent & event)
