@@ -183,10 +183,12 @@ WXExampleFrame::parseReturn WXExampleFrame::parseRadioButton(boost::property_tre
 	std::string sLabel = pt.get("<xmlattr>.label", "");
 	std::string sID = pt.get("<xmlattr>.id", "");
 	bool bDisabled = pt.get("<xmlattr>.disabled", false);
+	bool bSelected = pt.get("<xmlattr>.selected", false);
 
 	wxRadioButton* pRadioButton = new wxRadioButton(this, wxID_ANY, sLabel);
 	pRadioButton->SetName(sID);
 	pRadioButton->Enable(!bDisabled);
+	pRadioButton->SetValue(bSelected);
 	Bind(wxEVT_RADIOBUTTON, &WXExampleFrame::handleRadioButton, this, pRadioButton->GetId());
 
 	pSizer->Add(pRadioButton, 0, wxALL, 5);
