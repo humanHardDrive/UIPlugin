@@ -1,5 +1,7 @@
 #include "BasicEventsPlugin.h"
 
+#include "Events.h"
+
 BasicEventsPlugin::BasicEventsPlugin()
 {
 }

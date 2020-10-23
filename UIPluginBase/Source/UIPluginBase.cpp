@@ -1,4 +1,5 @@
-#include "UIPluginBase.hpp"
+ #include "UIPluginBase.hpp"
+#include "Events.h"
 
 #include "boost/property_tree/json_parser.hpp"
 
@@ -18,29 +19,19 @@ bool UIPluginBase::passEvent(std::string sEvent)
 
 	try
 	{
-		std::string sElementName, sEventType;
+		std::pair<std::string, std::string> eventPair;
 		std::stringstream ss;
 		ss << sEvent;
 
 		boost::property_tree::json_parser::read_json(ss, pt);
-		sElementName = pt.get("ElementName", "");
-		sEventType = pt.get("EventType", "");
+		eventPair.first = pt.get(EVENT_SOURCE, "");
+		eventPair.second = pt.get(EVENT_TYPE, "");
 		
-		if (m_ElementEventMap.find(sElementName) != m_ElementEventMap.end())
-		{
-			if (m_ElementEventMap[sElementName].find(sEventType) != m_ElementEventMap[sElementName].end())
-			{
-				m_ElementEventMap[sElementName][sEventType](pt.get_child("Data"));
-			}
-			else
-			{
-				BOOST_LOG_TRIVIAL(error) << "Unhandled event " << sEventType;
-				return false;
-			}
-		}
+		if (m_EventMap.find(eventPair) != m_EventMap.end())
+			m_EventMap[eventPair](pt.get(EVENT_DATA, ""));
 		else
 		{
-			BOOST_LOG_TRIVIAL(error) << "Unknown element " << sElementName;
+			BOOST_LOG_TRIVIAL(error) << "Unhandled event source=" << eventPair.first << " type=" << eventPair.second;
 			return false;
 		}
 	}
@@ -51,4 +42,9 @@ bool UIPluginBase::passEvent(std::string sEvent)
 	}
 
 	return false;
+}
+
+void UIPluginBase::setEventCallback(const std::string & sSource, const std::string & sEventType, std::function<void(std::string)> fn)
+{
+	m_EventMap[std::pair<std::string, std::string>(sSource, sEventType)] = fn;
 }

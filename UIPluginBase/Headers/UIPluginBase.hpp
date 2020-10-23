@@ -5,6 +5,7 @@
 
 #include <string>
 #include <functional>
+#include <utility>
 #include <map>
 
 class BOOST_SYMBOL_VISIBLE UIPluginBase
@@ -22,7 +23,9 @@ public:
 protected:
 	std::string m_sPluginName;
 
+	void setEventCallback(const std::string& sSource, const std::string& sEventType, std::function<void(std::string)> fn);
+
 private:
-	//map<element_name, map<event_name, event_handler_fn>>
-	std::map<std::string, std::map<std::string, std::function<void(boost::property_tree::ptree& pt)>>> m_ElementEventMap;
+	//map<pair<event source, event type>, callback with data>
+	std::map<std::pair<std::string, std::string>, std::function<void(std::string)>> m_EventMap;
 };
