@@ -48,6 +48,12 @@ private:
 
 	parseReturn parseSpacer(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
 
+	parseReturn parseBox(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
+	parseReturn parseHBox(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
+	parseReturn parseVBox(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
+
+	parseReturn parseLabel(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
+
 	void handleButtonPress(wxCommandEvent& event);
 	void handleComboboxChange(wxCommandEvent& event);
 	void handleRadioButton(wxCommandEvent& event);

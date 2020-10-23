@@ -6,7 +6,7 @@
 #include "wx/button.h"
 #include "wx/combobox.h"
 #include "wx/radiobut.h"
-#include "wx/msgdlg.h"
+#include "wx/stattext.h"
 
 #include <iostream>
 
@@ -20,12 +20,13 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	WXExampleFrameBase(parent)
 {
 	//Setup event mapping
-	m_EventEventMap[wxEVT_BUTTON] = BUTTON_ELEMENT;
-	m_EventEventMap[wxEVT_COMBOBOX] = MENULIST_ELEMENT;
-	m_EventEventMap[wxEVT_RADIOBUTTON] = RADIO_BUTTON_ELEMENT;
+	m_EventEventMap[wxEVT_BUTTON]			= BUTTON_ELEMENT;
+	m_EventEventMap[wxEVT_COMBOBOX]			= MENULIST_ELEMENT;
+	m_EventEventMap[wxEVT_RADIOBUTTON]		= RADIO_BUTTON_ELEMENT;
 
-	m_EventDataFnMap[wxEVT_BUTTON] = [this](int ID) {return ""; };
-	m_EventDataFnMap[wxEVT_COMBOBOX] = [this](int ID) {	return std::string(static_cast<wxComboBox*>(FindWindowById(ID))->GetStringSelection().c_str()); };
+	m_EventDataFnMap[wxEVT_BUTTON]			= [this](int ID) { return ""; };
+	m_EventDataFnMap[wxEVT_COMBOBOX]		= [this](int ID) {	return std::string(static_cast<wxComboBox*>(FindWindowById(ID))->GetStringSelection().c_str()); };
+	m_EventDataFnMap[wxEVT_RADIOBUTTON]		= [this](int ID) { return ""; };
 
 	//Setup element parsing functions
 	m_ParseFnMap[WINDOW_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseWindow(pt, pSizer, pElement); };
@@ -40,6 +41,12 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	m_ParseFnMap[RADIO_BUTTON_ELEMENT]	= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseRadioButton(pt, pSizer, pElement); };
 
 	m_ParseFnMap[SPACER_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseSpacer(pt, pSizer, pElement); };
+
+	m_ParseFnMap[BOX_ELEMENT]			= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseBox(pt, pSizer, pElement); };
+	m_ParseFnMap[HBOX_ELEMENT]			= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseHBox(pt, pSizer, pElement); };
+	m_ParseFnMap[VBOX_ELEMENT]			= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseVBox(pt, pSizer, pElement); };
+
+	m_ParseFnMap[LABEL_ELEMENT]			= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseLabel(pt, pSizer, pElement); };
 }
 
 void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
@@ -203,6 +210,49 @@ WXExampleFrame::parseReturn WXExampleFrame::parseRadioButton(boost::property_tre
 
 WXExampleFrame::parseReturn WXExampleFrame::parseSpacer(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
 {
+	pSizer->Add(0, 0, 1, wxEXPAND, 5);
+	return std::make_tuple(true, pSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseBox(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	std::string sOrientation = pt.get("<xmlattr>.orient", "vertical");
+
+	if (sOrientation == "vertical")
+		return parseVBox(pt, pSizer, pElement);
+	else if(sOrientation == "horizontal")
+		return parseHBox(pt, pSizer, pElement);
+
+	return std::make_tuple(false, pSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseHBox(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	wxBoxSizer* pBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+	pSizer->Add(pBoxSizer);
+
+	return std::make_tuple(true, pBoxSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseVBox(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	wxBoxSizer* pBoxSizer = new wxBoxSizer(wxVERTICAL);
+	pSizer->Add(pBoxSizer);
+
+	return std::make_tuple(true, pBoxSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseLabel(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	std::string sLabel = pt.get("<xmlattr>.value", "");
+	bool bDisabled = pt.get("<xmlattr>.disabled", false);
+
+	wxStaticText* pStaticText = new wxStaticText(this, wxID_ANY, sLabel);
+	pStaticText->Enable(!bDisabled);
+
+	pSizer->Add(pStaticText);
+	m_aPluginObjects.push(pStaticText);
+
 	return std::make_tuple(true, pSizer, pElement);
 }
 
