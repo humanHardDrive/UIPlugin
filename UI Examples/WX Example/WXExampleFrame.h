@@ -54,6 +54,8 @@ private:
 
 	parseReturn parseLabel(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
 
+	parseReturn parseTextBox(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
+
 	void handleButtonPress(wxCommandEvent& event);
 	void handleComboboxChange(wxCommandEvent& event);
 	void handleRadioButton(wxCommandEvent& event);

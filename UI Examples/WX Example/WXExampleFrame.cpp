@@ -47,6 +47,8 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 	m_ParseFnMap[VBOX_ELEMENT]			= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseVBox(pt, pSizer, pElement); };
 
 	m_ParseFnMap[LABEL_ELEMENT]			= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseLabel(pt, pSizer, pElement); };
+
+	m_ParseFnMap[TEXTBOX_ELEMENT]		= [this](boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement) { return parseTextBox(pt, pSizer, pElement); };
 }
 
 void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
@@ -252,6 +254,22 @@ WXExampleFrame::parseReturn WXExampleFrame::parseLabel(boost::property_tree::ptr
 
 	pSizer->Add(pStaticText);
 	m_aPluginObjects.push(pStaticText);
+
+	return std::make_tuple(true, pSizer, pElement);
+}
+
+WXExampleFrame::parseReturn WXExampleFrame::parseTextBox(boost::property_tree::ptree & pt, wxSizer * pSizer, wxWindow * pElement)
+{
+	std::string sValue = pt.get("<xmlattr>.value", "");
+	std::string sID = pt.get("<xmlattr>.id", "");
+	bool bDisabled = pt.get("<xmlattr>.disabled", false);
+
+	wxTextCtrl* pTextBox = new wxTextCtrl(this, wxID_ANY, sValue);
+	pTextBox->Enable(!bDisabled);
+	pTextBox->SetName(sID);
+
+	pSizer->Add(pTextBox);
+	m_aPluginObjects.push(pTextBox);
 
 	return std::make_tuple(true, pSizer, pElement);
 }
