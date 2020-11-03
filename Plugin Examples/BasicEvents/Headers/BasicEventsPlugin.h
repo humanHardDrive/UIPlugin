@@ -8,5 +8,8 @@ public:
 	BasicEventsPlugin();
 	~BasicEventsPlugin();
 
+protected:
+	std::string resourcePath() { return "layout.xml"; };
+
 private:
 };

@@ -1,6 +1,7 @@
 #include "WXExampleFrame.h"
 
 #include "wx/dirdlg.h"
+#include "wx/msgdlg.h"
 #include "wx/sizer.h"
 #include "wx/statbox.h"
 #include "wx/button.h"
@@ -78,10 +79,11 @@ void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
 		}
 		catch (boost::system::system_error& e) 
 		{
+			wxMessageBox(std::string("Error: ") + e.what(), "Plugin Load Error", wxICON_ERROR | wxOK | wxCENTRE);
 			return;
 		}
 
-		parsePluginUI(m_pCurrentPlugin->resourcePath()); 
+		parsePluginUI(sPluginPath + "\\" + m_pCurrentPlugin->resourcePath()); 
 	}
 }
 

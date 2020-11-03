@@ -7,4 +7,6 @@
 #define EVENT_BUTTON		"buttonpress"
 #define EVENT_SELECT		"selected"
 
+#define EVENT_TEXT_CHANGE	"textchange"
+
 #define EVENT_KEYPRESS		"keypress"
