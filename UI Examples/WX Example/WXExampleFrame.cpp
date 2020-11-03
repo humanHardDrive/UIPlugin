@@ -1,6 +1,6 @@
 #include "WXExampleFrame.h"
 
-#include "wx/filedlg.h"
+#include "wx/dirdlg.h"
 #include "wx/sizer.h"
 #include "wx/statbox.h"
 #include "wx/button.h"
@@ -53,10 +53,13 @@ WXExampleFrame::WXExampleFrame(wxWindow * parent) :
 
 void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
 {
-	wxFileDialog dlg(this, _("Open File"), "", "", "XUL File (*.xml)|*.xml", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	wxDirDialog dlg(this, _("Choose plugin folder"), "", wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
 
 	if (dlg.ShowModal() == wxID_CANCEL)
 		return;
+
+	if (m_pCurrentPlugin)
+		m_pCurrentPlugin.reset();
 
 	//Clear out all of the old UI elements
 	while (!m_aPluginObjects.empty())
@@ -65,7 +68,42 @@ void WXExampleFrame::OnOpenPlugin(wxCommandEvent & /*event*/)
 		m_aPluginObjects.pop();
 	}
 
-	parsePluginUI(std::string(dlg.GetPath()));
+	std::string sPluginPath(dlg.GetPath());
+	std::string sFileName, sPluginName, sPluginDesc;
+	if (getPluginInfo(sPluginPath, sFileName, sPluginName, sPluginDesc))
+	{
+		try
+		{
+			m_pCurrentPlugin = boost::dll::import<UIPluginBase>(sPluginPath + std::string("\\") + sFileName, sPluginName);
+		}
+		catch (boost::system::system_error& e) 
+		{
+			return;
+		}
+
+		parsePluginUI(m_pCurrentPlugin->resourcePath()); 
+	}
+}
+
+bool WXExampleFrame::getPluginInfo(std::string & sPluginPath, std::string& sPluginFileName, std::string & sPluginName, std::string & sPluginDesc)
+{
+	boost::property_tree::ptree pt;
+	std::string sInfoPath = sPluginPath + "\\info.xml";
+
+	try
+	{
+		boost::property_tree::read_xml(sInfoPath, pt);
+
+		sPluginFileName = pt.get<std::string>("Filename", "");
+		sPluginName = pt.get<std::string>("Name", "");
+		sPluginDesc = pt.get<std::string>("Description", "");
+	}
+	catch (boost::property_tree::ptree_error& e)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool WXExampleFrame::parsePluginUI(const std::string & sFilePath)

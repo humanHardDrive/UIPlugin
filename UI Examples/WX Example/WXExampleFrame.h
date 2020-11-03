@@ -32,6 +32,8 @@ private:
 
 	boost::shared_ptr<UIPluginBase> m_pCurrentPlugin;
 
+	bool getPluginInfo(std::string& sPluginPath, std::string& sPluginFileName, std::string& sPluginName, std::string& sPluginDesc);
+
 	bool parsePluginUI(const std::string& sFilePath);
 	parseReturn parseElements(boost::property_tree::ptree& pt, wxSizer* pSizer, wxWindow* pElement);
 

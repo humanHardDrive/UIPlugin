@@ -44,7 +44,11 @@ bool UIPluginBase::passEvent(std::string sEvent)
 	return false;
 }
 
-void UIPluginBase::setEventCallback(const std::string & sSource, const std::string & sEventType, std::function<void(std::string)> fn)
+void UIPluginBase::setEventHandler(const std::string & sSource, const std::string & sEventType, std::function<void(std::string)> fn)
 {
 	m_EventMap[std::pair<std::string, std::string>(sSource, sEventType)] = fn;
+}
+
+void UIPluginBase::generateEvent(const std::string & sEventType, const std::string & sSource, const std::string & sData)
+{
 }
